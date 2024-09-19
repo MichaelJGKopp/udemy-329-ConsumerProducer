@@ -10,18 +10,28 @@ class MessageRepository {
   public synchronized String read() {
 
     while (!hasMessage) {
-
+      try {
+        wait();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
     }
     hasMessage = false;
+    notifyAll();
     return message;
   }
 
   public synchronized void write(String message) {
 
     while (hasMessage) {
-
+      try {
+        wait();
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
     }
     hasMessage = true;
+    notifyAll();
     this.message = message;
   }
 }
@@ -48,7 +58,7 @@ class MessageWriter implements Runnable {
     for (int i = 0; i < lines.length; i++) {
       outgoingMessage.write(lines[i]);
       try {
-        Thread.sleep(random.nextInt(500, 2000));
+        Thread.sleep(random.nextInt(500, 1000));
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
@@ -73,7 +83,7 @@ class MessageReader implements Runnable {
 
     do {
       try {
-        Thread.sleep(random.nextInt(500,2000));
+        Thread.sleep(random.nextInt(500,1000));
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
